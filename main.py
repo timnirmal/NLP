@@ -1,14 +1,16 @@
 import nltk
 from nltk import word_tokenize, sent_tokenize
+import numpy as np
 
 # For one time downloading, (after that comment out)
-#nltk.download('punkt')
-#nltk.download('stopwords')
-#nltk.download('wordnet')
-#nltk.download('omw-1.4')
-#nltk.download('averaged_perceptron_tagger')
-#nltk.download('state_union')
-
+# nltk.download('punkt')
+# nltk.download('stopwords')
+# nltk.download('wordnet')
+# nltk.download('omw-1.4')
+# nltk.download('averaged_perceptron_tagger')
+# nltk.download('state_union')
+# nltk.download('maxent_ne_chunker')
+# nltk.download('words')
 
 
 # tokenizing means breaking a sentence into words
@@ -56,7 +58,6 @@ for i in (word_tokenize(example_text)):
 
 from nltk.corpus import stopwords
 
-
 example_sentence = "This is an example showing off stop word filtration."
 stop_words = set(stopwords.words("english"))
 
@@ -92,16 +93,13 @@ for w in example_words:
 for t in word_tokenize(new_text):
     print(ps.stem(t))
 
-
 # 4. Lemmatization
 # lemmatization is the process of finding the base word of a word
 
 
 from nltk.stem import WordNetLemmatizer
 
-
 lemmatizer = WordNetLemmatizer()
-
 
 print("\nLemmatized text:")
 for t in word_tokenize(new_text):
@@ -167,6 +165,7 @@ custom_sent_tokenizer = PunktSentenceTokenizer(train_text)
 
 tokenized = custom_sent_tokenizer.tokenize(sample_text)
 
+
 def process_content():
     try:
         for i in tokenized:
@@ -176,8 +175,120 @@ def process_content():
     except Exception as e:
         print(str(e))
 
+
 process_content()
 
-
-
 # 6. Chunking
+# Chunking means
+# For example: if we have a sentence like "I am a
+# student. I am studying in the university."
+# We can chunk the sentence into different parts like
+# I am a student
+# I am studying in the university
+# So Most of the time we use the chunking to find the subject of the sentence
+# Which means this happens around a Noun
+
+"""
+Chunking is the process of grouping words together to form a phrase
+
+Modifiers:
+    {1,3} = for digit, you expect 1-3 count of digital numbers or "places"
+    + = match 1 or more
+    ? = match 0 or 1 repetitions
+    * = match 0 or more repetitions
+    $ = match the end of the string
+    ^ = match the beginning of the string
+    | = match either of the patterns
+    [] = range or variance, [a-z] = match characters between a to z (both included)
+    {x} = expect to see this amount of the preceding code  / exact number of repetitions
+    {x,y} = expect to see this x to y amount of the preceding code 
+"""
+
+
+def process_content_with_Chunking():
+    try:
+        for i in tokenized:
+            words = nltk.word_tokenize(i)
+            tagged = nltk.pos_tag(words)
+
+            chunkGram = r""""Chunk: {<RB.?>*<VB.?>*<NNP>+<NN>?}"""
+
+            chunkPharser = nltk.RegexpParser(chunkGram)
+            chunked = chunkPharser.parse(tagged)
+
+            print(chunked)
+            print("\n")
+            # chunked.draw()
+
+    except Exception as e:
+        print(str(e))
+
+
+process_content_with_Chunking()
+
+# 7. Chinking
+# Chinking means to remove the chunk from the sentence
+
+def process_content_with_Chinking():
+    try:
+        for i in tokenized:
+            words = nltk.word_tokenize(i)
+            tagged = nltk.pos_tag(words)
+
+            chunkGram = r""""Chunk: {<.*>?}
+                                    }<VB.?|DT|DT|TO>{""" # Note that we use }{ instead of {} for chinking
+
+            chunkPharser = nltk.RegexpParser(chunkGram)
+            chunked = chunkPharser.parse(tagged)
+
+            print(chunked)
+            print("\n")
+            # chunked.draw()
+
+    except Exception as e:
+        print(str(e))
+
+
+process_content_with_Chinking()
+
+
+# 8. Named Entity Recognition
+# Named Entity Recognition is the process of finding the name of the person, place, organization, etc.
+# In NLP, we use the chunking to find the subject of the sentence
+# But in NER, we use the chunking to find the name of the person, place, organization, etc.
+
+"""
+Name Entity types:
+    ORGANIZATION - Georgia-Pacific Corp., WHO
+    PERSON - Eddy Bonte, President Obama
+    LOCATION - Murray River, Mount Everest
+    DATE - June, 2008-06-29
+    TIME - two fifty a m, 1:30 p.m.
+    MONEY - 175 million Canadian Dollors, GBP 10.40
+    PERCENT - twenty pct, 18.75 %
+    FACILITY - Washington Monument, Stonehenge
+    GPE - South East Asia, Midlothian
+"""
+
+def process_content_with_NameEntity():
+    try:
+        for i in tokenized:
+            words = nltk.word_tokenize(i)
+            tagged = nltk.pos_tag(words)
+
+            nameEnt = nltk.ne_chunk(tagged, binary=True)
+            # binary = False means that we are looking for the subject of the sentence
+            # ex: Chunk will show as PERSON and its branch will show as the name of the person chunked (George Bush)
+
+            # binary = True means that we are looking for the name of the person, place, organization, etc.
+            # ex: Chunk as EN (Entity)
+
+            print(nameEnt)
+            print("\n")
+            nameEnt.draw()
+
+    except Exception as e:
+        print(str(e))
+
+
+process_content_with_NameEntity()
