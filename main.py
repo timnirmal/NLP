@@ -1,8 +1,7 @@
 import nltk
 from nltk import word_tokenize, sent_tokenize
-import numpy as np
 
-# For one time downloading, (after that comment out)
+# TODO: For one time downloading, (after that comment out)
 # nltk.download('punkt')
 # nltk.download('stopwords')
 # nltk.download('wordnet')
@@ -36,6 +35,8 @@ import numpy as np
 # document summarization is used to find the most important sentences in a document
 # information retrieval system is used to find relevant documents
 # information retrieval is used to find relevant documents
+
+# 1. Tokenization
 
 example_text = "Hello Mr. Smith, how are you doing today? The weather is great, and Python is awesome. The sky is " \
                "pinkish-blue. You shouldn't eat cardboard. "
@@ -188,8 +189,21 @@ process_content()
 # So Most of the time we use the chunking to find the subject of the sentence
 # Which means this happens around a Noun
 
+# Before chunking you need to know Regular Expressions
 """
-Chunking is the process of grouping words together to form a phrase
+
+
+Identifiers:
+
+\d = any number
+\D = anything but a number
+\s = space
+\S = anything but a space
+\w = any letter
+\W = anything but a letter
+. = any character, except for a new line
+\b = space around whole words
+\. = period. must use backslash, because . normally means any character.
 
 Modifiers:
     {1,3} = for digit, you expect 1-3 count of digital numbers or "places"
@@ -202,6 +216,32 @@ Modifiers:
     [] = range or variance, [a-z] = match characters between a to z (both included)
     {x} = expect to see this amount of the preceding code  / exact number of repetitions
     {x,y} = expect to see this x to y amount of the preceding code 
+    
+White Space Charts:
+
+\n = new line
+\s = space
+\t = tab
+\e = escape
+\f = form feed
+\r = carriage return
+Characters to REMEMBER TO ESCAPE IF USED!
+
+. + * ? [ ] $ ^ ( ) { } | \
+Brackets:
+
+[] = quant[ia]tative = will find either quantitative, or quantatative.
+[a-z] = return any lowercase letter a-z
+[1-5a-qA-Z] = return all numbers 1-5, lowercase letters a-q and uppercase A-Z
+
+"""
+
+"""
+Chunking is the process of grouping words together to form a phrase
+(Part of Speech Tagging + Regex Chunking = Chunking) 
+
+POS Tagging: is denoted by < and >
+RegEx symbols are denote with them.
 """
 
 
@@ -220,11 +260,32 @@ def process_content_with_Chunking():
             print("\n")
             # chunked.draw()
 
+            """
+            # Chuned and Non Chunked subtree
+            for subtree in chunked.subtrees():
+                print("\nSubtree : ", subtree)
+
+            # Chunked and Non Chunked leaves
+            for leaf in chunked.leaves():
+                print("Leaf : ", leaf)
+
+            # Chunked subtree
+            for subtree in chunked.subtrees(filter=lambda t: t.label() == 'Chunk'):
+                print("\nSubtree Chunked: ", subtree)
+
+                # Chunked leaves
+                for leaf in subtree.leaves():
+                    print("Leaf Chunked: ", leaf)
+            """
+
     except Exception as e:
         print(str(e))
 
 
+# Uncomment
+print("\n\n\n Chunking : ")
 process_content_with_Chunking()
+
 
 # 7. Chinking
 # Chinking means to remove the chunk from the sentence
@@ -236,7 +297,7 @@ def process_content_with_Chinking():
             tagged = nltk.pos_tag(words)
 
             chunkGram = r""""Chunk: {<.*>?}
-                                    }<VB.?|DT|DT|TO>{""" # Note that we use }{ instead of {} for chinking
+                                    }<VB.?|DT|DT|TO>{"""  # Note that we use }{ instead of {} for chinking
 
             chunkPharser = nltk.RegexpParser(chunkGram)
             chunked = chunkPharser.parse(tagged)
@@ -249,8 +310,8 @@ def process_content_with_Chinking():
         print(str(e))
 
 
-process_content_with_Chinking()
-
+# Uncomment
+# process_content_with_Chinking()
 
 # 8. Named Entity Recognition
 # Named Entity Recognition is the process of finding the name of the person, place, organization, etc.
@@ -269,6 +330,7 @@ Name Entity types:
     FACILITY - Washington Monument, Stonehenge
     GPE - South East Asia, Midlothian
 """
+
 
 def process_content_with_NameEntity():
     try:
@@ -291,4 +353,91 @@ def process_content_with_NameEntity():
         print(str(e))
 
 
-process_content_with_NameEntity()
+# Uncomment
+# process_content_with_NameEntity()
+
+# 9. Lemmatization
+
+# Lemmatization is the process of finding the root word of the word like "is" to "be" or "play" to "play" etc.(Not Sure)
+# Similar to stemming, but it is more accurate and less prone to errors (Which means same word or a synonym)
+
+# Default pos = Noun
+
+from nltk.stem import WordNetLemmatizer
+
+lemmatizer = WordNetLemmatizer()
+
+print("\nLemmatization")
+print(lemmatizer.lemmatize("cats"))
+print(lemmatizer.lemmatize("cacti"))
+print(lemmatizer.lemmatize("geese"))
+print(lemmatizer.lemmatize("rocks"), end="\n\n")
+
+# with pos
+print(lemmatizer.lemmatize("better", pos="a"))
+print(lemmatizer.lemmatize("best", pos="a"))
+print(lemmatizer.lemmatize("run", pos="v"))
+
+# Corpora Path - C:\Users\timni\PycharmProjects\NLP\venv\Lib\site-packages\nltk
+
+# 10. WordNet
+"""WordNet is the lexical database i.e. dictionary for the English language, specifically designed for natural 
+language processing. 
+
+Synset is a special kind of a simple interface that is present in NLTK to look up words in WordNet. Synset instances 
+are the groupings of synonymous words that express the same concept. Some of the words have only one Synset and some 
+have several. """
+
+from nltk.corpus import wordnet
+
+synset = wordnet.synsets("program")
+
+print("\nWordNet")
+print(synset[0])
+print(synset[0].name())  # sysnet object
+print(synset[0].lemmas())  # list of lemmas
+# lemmas() returns a list of lemmas, each of which has a name, part of speech, and an example sentence
+# lemmas means the base word of the word something like that
+for i in synset[0].lemmas():
+    print(i)
+    print(i.name())
+    print(i.synset())
+print()
+
+print(synset[0].lemmas()[0].name())  # sysnet name
+print(synset[0].definition())
+print(synset[0].examples())
+
+# Example code : Synonyms and Antonyms
+
+synonyms = []
+antonyms = []
+
+for synset in wordnet.synsets("good"):
+    for lemma in synset.lemmas():
+        print("l:", lemma)
+        synonyms.append(lemma.name())
+        if lemma.antonyms():
+            antonyms.append(lemma.antonyms()[0].name())
+
+print("\nSynonyms and Antonyms")
+print(set(synonyms))
+print(set(antonyms))
+
+# Similarity between two words
+#   Check on WUP_similarity
+
+print("\nSimilarity between two words")
+
+w1 = wordnet.synset("ship.n.01")
+w2 = wordnet.synset("boat.n.01")
+print(w1.wup_similarity(w2))
+
+w3 = wordnet.synset("car.n.01")
+print(w1.wup_similarity(w3))
+
+w4 = wordnet.synset("cat.n.01")
+print(w1.wup_similarity(w4))
+
+w5 = wordnet.synset("cactus.n.01")
+print(w1.wup_similarity(w5))
